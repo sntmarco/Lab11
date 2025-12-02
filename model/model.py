@@ -5,6 +5,9 @@ from database.dao import DAO
 class Model:
     def __init__(self):
         self.G = nx.Graph()
+        self._rifugi = None
+        self._connessioni_rifugi = None
+        self._num_nodi = None
 
     def build_graph(self, year: int):
         """
@@ -13,14 +16,18 @@ class Model:
         Quindi il grafo avrà solo i nodi che appartengono almeno ad una connessione, non tutti quelli disponibili.
         :param year: anno limite fino al quale selezionare le connessioni da includere.
         """
-        # TODO
+        self._rifugi = DAO.get_rifugi(year)
+        self._connessioni_rifugi = DAO.get_connessione_rifugi(year)
+        for c in self._connessioni_rifugi:
+            self.G.add_edge(c.id_rifugio1, c.id_rifugio2)
 
     def get_nodes(self):
         """
         Restituisce la lista dei rifugi presenti nel grafo.
         :return: lista dei rifugi presenti nel grafo.
         """
-        # TODO
+        #f"{self._rifugi.nome} ({self._rifugi.localita}) {self._rifugi.altitudine} m"
+        return self._rifugi
 
     def get_num_neighbors(self, node):
         """
@@ -35,7 +42,8 @@ class Model:
         Restituisce il numero di componenti connesse del grafo.
         :return: numero di componenti connesse
         """
-        # TODO
+        self._num_nodi = self.G.number_of_nodes()
+        return self._num_nodi
 
     def get_reachable(self, start):
         """
