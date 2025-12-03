@@ -16,18 +16,34 @@ class Model:
         Quindi il grafo avrà solo i nodi che appartengono almeno ad una connessione, non tutti quelli disponibili.
         :param year: anno limite fino al quale selezionare le connessioni da includere.
         """
+        self.G.clear()
         self._rifugi = DAO.get_rifugi(year)
         self._connessioni_rifugi = DAO.get_connessione_rifugi(year)
         for c in self._connessioni_rifugi:
             self.G.add_edge(c.id_rifugio1, c.id_rifugio2)
+
+    def id_nome(self, id):
+        nome = None
+        for rifugio in self._rifugi:
+            if rifugio.id == id:
+                nome = rifugio.nome
+                break
+        return nome
+
+    def id_localita(self, id):
+        localita = None
+        for rifugio in self._rifugi:
+            if rifugio.id == id:
+                localita = rifugio.localita
+                break
+        return localita
 
     def get_nodes(self):
         """
         Restituisce la lista dei rifugi presenti nel grafo.
         :return: lista dei rifugi presenti nel grafo.
         """
-        #f"{self._rifugi.nome} ({self._rifugi.localita}) {self._rifugi.altitudine} m"
-        return self._rifugi
+        return self.G
 
     def get_num_neighbors(self, node):
         """
@@ -35,14 +51,19 @@ class Model:
         :param node: un rifugio (cioè un nodo del grafo)
         :return: numero di vicini diretti del nodo indicato
         """
-        # TODO
+        num_neighbors = self.G.degree[node]
+        return num_neighbors
 
     def get_num_connected_components(self):
         """
         Restituisce il numero di componenti connesse del grafo.
         :return: numero di componenti connesse
         """
-        self._num_nodi = self.G.number_of_nodes()
+        self._num_nodi = 0
+        for n in self.G:
+            num_vicini_n = self.G.degree[n]
+            if num_vicini_n > self._num_nodi:
+                self._num_nodi = num_vicini_n
         return self._num_nodi
 
     def get_reachable(self, start):
@@ -60,6 +81,24 @@ class Model:
         b = self.get_reachable_recursive(start)
 
         return a
+
+        ---
+        1) metodo con DFS ricorsiva:
+
+        visited = set()
+        def dfs(node):
+            for neighbor in self.G.neighbors(node):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    dfs(neighbor)
+
+        dfs(start)
+        visited.discard(start)  # rimuovo il nodo di partenza
+        return list(visited)
         """
 
-        # TODO
+        #2) Restituisce la lista di nodi raggiungibili da `start` usando bfs_tree.
+        bfs = nx.bfs_tree(self.G, start)
+        reachable = list(bfs.nodes)
+        reachable.remove(start)
+        return reachable

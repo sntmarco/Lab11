@@ -77,5 +77,3 @@ class DAO:
             cnx.close()
 
         return lista_connessioni
-
-

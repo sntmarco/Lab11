@@ -10,11 +10,13 @@ class Controller:
         self._model = model
         self._current_rifugio = None
         self._connessionedb = DBConnect.get_connection()
+        if self._connessionedb is None:
+            self._view.show_alert("❌ Impossibile stabilire connessione con il Database")
 
     def handle_calcola(self, e):
         """Callback per il bottone 'Calcola sentieri'."""
         if self._connessionedb is None:
-            self._view.show_alert("Impossibile stabilire connessione con il Database")
+            self._view.show_alert("❌ Impossibile stabilire connessione con il Database")
             return
         year = self._view.txt_anno.value
         try:
@@ -36,12 +38,16 @@ class Controller:
         num_cc = self._model.get_num_connected_components()
         self._view.lista_visualizzazione.controls.append(
             ft.Text(f"Il grafo ha {num_cc} componenti connesse."))
-        self._view.lista_visualizzazione.controls.append(ft.Text("Di seguito il dettaglio sui nodi:"))
+        self._view.lista_visualizzazione.controls.append(ft.Text(""))
+        if num_cc != 0:
+            self._view.lista_visualizzazione.controls.append(ft.Text("Di seguito il dettaglio sui nodi:"))
 
         for n in self._model.get_nodes():
             # n è un oggetto rifugio; usiamo .nome come rappresentazione
             grado = self._model.get_num_neighbors(n)
-            self._view.lista_visualizzazione.controls.append(ft.Text(f"{n} -- {grado} vicini."))
+            nome_rifugio = self._model.id_nome(n)
+            localita_rifugio = self._model.id_localita(n)
+            self._view.lista_visualizzazione.controls.append(ft.Text(f"{n} {nome_rifugio} ({localita_rifugio})  --  {grado} vicini."))
 
         # abilita dropdown e bottone raggiungibili (se erano disabilitati)
         self._view.dd_rifugio.disabled = False
@@ -60,10 +66,10 @@ class Controller:
         raggiungibili = self._model.get_reachable(self._current_rifugio)
         self._view.lista_visualizzazione.controls.clear()
         self._view.lista_visualizzazione.controls.append(
-            ft.Text(f"Da '{self._current_rifugio.nome}' è possibile raggiungere a piedi {len(raggiungibili)} rifugi:"))
+            ft.Text(f"Da '{self._model.id_nome(self._current_rifugio)}' è possibile raggiungere a piedi {len(raggiungibili)} rifugi:"))
         for r in raggiungibili:
             # supponiamo che l'oggetto r abbia attributo nome
-            self._view.lista_visualizzazione.controls.append(ft.Text(f"{r}"))
+            self._view.lista_visualizzazione.controls.append(ft.Text(f"{self._model.id_nome(r)} ({r})"))
 
         self._view.update()
 
@@ -74,7 +80,8 @@ class Controller:
 
         for r in all_rifugi:
             # Solo text e data: value non serve
-            option = ft.dropdown.Option(text=r.nome, data=r)
+            nome_rifugio = self._model.id_nome(r)
+            option = ft.dropdown.Option(text=f"{nome_rifugio} ({r})", data=r)
             self._view.dd_rifugio.options.append(option)
 
         # aggiorna il dropdown
@@ -99,4 +106,3 @@ class Controller:
                 break
 
         self._current_rifugio = found
-        print("Rifugio selezionato:", self._current_rifugio)

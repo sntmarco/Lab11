@@ -13,7 +13,10 @@ class Rifugio:
         return isinstance(other, Rifugio) and self.id == other.id
 
     def __str__(self):
-        return f"{self.nome, self.localita, self.altitudine}"
+        return f"{self.nome} ({self.localita}) - {self.altitudine} m"
 
     def __repr__(self):
-        return f"{self.nome, self.localita, self.altitudine}"
+        return f"{self.nome} ({self.localita}) - {self.altitudine} m"
+
+    def __hash__(self):
+        return hash(self.id)
