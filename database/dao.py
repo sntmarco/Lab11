@@ -19,7 +19,7 @@ class DAO:
         cursor = cnx.cursor(dictionary=True)
         query = """ SELECT DISTINCT r.*
                     FROM rifugio r, connessione c
-                    WHERE r.id = c.id_rifugio1 OR r.id = c.id_rifugio2 AND anno < %s
+                    WHERE r.id = c.id_rifugio1 OR r.id = c.id_rifugio2 AND anno <= %s
                     ORDER BY nome ASC
                 """
         try:
@@ -55,7 +55,7 @@ class DAO:
         cursor = cnx.cursor(dictionary=True)
         query = """ SELECT *
                     FROM connessione
-                    WHERE anno < %s """
+                    WHERE anno <= %s """
         try:
             cursor.execute(query, (year,))
             for row in cursor:
